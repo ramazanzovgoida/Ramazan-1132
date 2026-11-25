@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Вариант 02 — Подбор отверстия малого моста (СП 35.13330.2011)</title>
+  <style>
+    :root {
+      --primary: #1e3a8a;
+      --primary-hover: #1d4ed8;
+      --bg: #f1f5f9;
+      --card: #ffffff;
+      --text: #0f172a;
+      --muted: #64748b;
+      --border: #cbd5e1;
+      --error: #dc2626;
+      --error-bg: #fef2f2;
+      --success: #16a34a;
+      --success-bg: #f0fdf4;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, Arial, sans-serif; }
+    body { background: var(--bg); color: var(--text); line-height: 1.5; padding: 20px; }
+    .container { max-width: 900px; margin: 0 auto; }
+
+    header {
+      background: var(--primary);
+      color: white;
+      padding: 24px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+    }
+    header h1 { font-size: 1.5rem; margin-bottom: 6px; }
+    header p { font-size: 0.95rem; opacity: 0.9; }
+    .student-badge {
+      display: inline-block;
+      margin-top: 10px;
+      background: rgba(255, 255, 255, 0.15);
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    @media (max-width: 768px) { .grid { grid-template-columns: 1fr; } }
+
+    .card {
+      background: var(--card);
+      border-radius: 12px;
+      padding: 22px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      border: 1px solid var(--border);
+    }
+    .card h2 {
+      font-size: 1.15rem;
+      color: var(--primary);
+      border-bottom: 2px solid var(--bg);
+      padding-bottom: 10px;
+      margin-bottom: 16px;
+    }
+
+    .form-group { margin-bottom: 16px; }
+    label { display: block; font-weight: 600; font-size: 0.9rem; margin-bottom: 6px; }
+    .hint { font-size: 0.8rem; color: var(--muted); display: block; margin-bottom: 4px; }
+
+    .input-row { display: flex; gap: 8px; }
+    input, select {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 1rem;
+      transition: border-color 0.2s;
+    }
+    input:focus, select:focus { outline: none; border-color: var(--primary); }
+    input.invalid { border-color: var(--error); background: var(--error-bg); }
+    .unit-select { width: 110px; flex-shrink: 0; background: #f8fafc; font-weight: 600; }
+
+    .error-msg {
+      color: var(--error);
+      font-size: 0.82rem;
+      margin-top: 5px;
+      display: none;
+      font-weight: 500;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+      margin-top: 8px;
+    }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-primary:hover { background: var(--primary-hover); }
+    .btn-sheets { background: #0f766e; color: white; margin-top: 14px; }
+    .btn-sheets:hover { background: #115e59; }
+    .btn-sheets:disabled { background: #94a3b8; cursor: not-allowed; }
+
+    .result-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px dashed var(--border);
+    }
+    .result-val { font-weight: 700; font-size: 1.05rem; }
+
+    .conclusion-box {
+      margin-top: 18px;
+      padding: 16px;
+      border-radius: 8px;
+      font-weight: 600;
+      display: none;
+    }
+    .conclusion-ok {
+      background: var(--success-bg);
+      color: var(--success);
+      border: 1px solid #86efac;
+    }
+    .conclusion-fail {
+      background: var(--error-bg);
+      color: var(--error);
+      border: 1px solid #fca5a5;
+    }
+
+    .trap-banner {
+      background: #fffbeb;
+      border: 1px solid #fcd34d;
+      color: #92400e;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      margin-bottom: 16px;
+    }
+    #sheetsStatus { font-size: 0.85rem; margin-top: 8px; text-align: center; font-weight: 500; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <h1>Инженерный помощник: Подбор отверстия малого моста</h1>
+    <p>Вариант №02 | Норматив: СП 35.13330.2011 «Мосты и трубы», п. 5.27</p>
+    <div class="student-badge">Выполнил: Рамазан Аласов | Группа: 1132</div>
+  </header>
+
+  <div class="grid">
+    <!-- БЛОК 1: ИСХОДНЫЕ ДАННЫЕ -->
+    <div class="card">
+      <h2>1. Исходные данные</h2>
+
+      <div class="trap-banner">
+        <strong>Защита от граничной ловушки:</strong> Площадь живого сечения должна задаваться в <b>м²</b> (для малых мостов обычно 2–150 м²). Ввод значений в <b>см²</b> без перевода блокируется системой.
+      </div>
+
+      <!-- Поле 1: Расчётный расход воды -->
+      <div class="form-group">
+        <label for="flowRate">Расчётный расход воды Q (м³/с)</label>
+        <span class="hint">По гидрологическому расчёту (СП 33-101-2003)</span>
+        <input type="text" id="flowRate" placeholder="Например: 25.5">
+        <div class="error-msg" id="err-flowRate"></div>
+      </div>
+
+      <!-- Поле 2: Допустимая скорость -->
+      <div class="form-group">
+        <label for="allowSpeed">Допустимая неразмывающая скорость v<sub>доп</sub> (м/с)</label>
+        <span class="hint">Принимается по таблице из СП для грунта русла или укрепления</span>
+        <input type="text" id="allowSpeed" placeholder="Например: 1.8">
+        <div class="error-msg" id="err-allowSpeed"></div>
+      </div>
+
+      <!-- Поле 3: Проектная площадь живого сечения (с защитой от см²) -->
+      <div class="form-group">
+        <label for="factArea">Проектная площадь живого сечения под мостом ω<sub>факт</sub></label>
+        <span class="hint">Произведение ширины отверстия B₀ на глубину потока h</span>
+        <div class="input-row">
+          <input type="text" id="factArea" placeholder="Например: 16.0">
+          <select id="areaUnit" class="unit-select" title="Единица измерения">
+            <option value="m2" selected>м²</option>
+            <option value="cm2">см²</option>
+          </select>
+        </div>
+        <div class="error-msg" id="err-factArea"></div>
+      </div>
+
+      <!-- Поле 4: Расчётная глубина воды -->
+      <div class="form-group">
+        <label for="waterDepth">Расчётная глубина воды под мостом h (м)</label>
+        <span class="hint">Для ориентировочного расчёта требуемой ширины отверстия B₀</span>
+        <input type="text" id="waterDepth" placeholder="Например: 2.0">
+        <div class="error-msg" id="err-waterDepth"></div>
+      </div>
+
+      <button class="btn btn-primary" onclick="calculateBridge()">Выполнить расчёт</button>
+    </div>
+
+    <!-- БЛОК 2: РЕЗУЛЬТАТЫ И ЗАКЛЮЧЕНИЕ -->
+    <div class="card">
+      <h2>2. Результаты расчёта</h2>
+
+      <div class="result-item">
+        <span>Требуемая площадь сечения (ω<sub>тр</sub>):</span>
+        <span class="result-val" id="res-reqArea">—</span>
+      </div>
+      <div class="result-item">
+        <span>Принятая площадь (ω<sub>факт</sub> в м²):</span>
+        <span class="result-val" id="res-factArea">—</span>
+      </div>
+      <div class="result-item">
+        <span>Фактическая средняя скорость (v<sub>факт</sub>):</span>
+        <span class="result-val" id="res-factSpeed">—</span>
+      </div>
+      <div class="result-item">
+        <span>Минимальная ширина отверстия (B<sub>0,тр</sub>):</span>
+        <span class="result-val" id="res-minWidth">—</span>
+      </div>
+      <div class="result-item">
+        <span>Запас пропускной способности:</span>
+        <span class="result-val" id="res-margin">—</span>
+      </div>
+
+      <!-- БЛОК 3: ИНЖЕНЕРНОЕ ЗАКЛЮЧЕНИЕ -->
+      <div id="conclusionBox" class="conclusion-box"></div>
+
+      <button class="btn btn-sheets" id="saveBtn" onclick="saveToGoogleSheets()" disabled>
+        Сохранить результат в Google Sheets
+      </button>
+      <div id="sheetsStatus"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // URL веб-приложения Google Apps Script
+  const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyVe2GNY2-eyXrNX78FhdvM9nJ5e2okhxl0DyEFssiN8-b6ZfkNHlhpnfY-kH9-mM6q/exec';
+
+  // Переменная для хранения последнего корректного расчёта
+  let lastCalculation = null;
+
+  /**
+   * Вспомогательная функция валидации числового поля
+   * Защищает от пустых строк, букв, нулей, отрицательных и слишком больших чисел
+   */
+  function validateNumber(rawValue, fieldName, minVal, maxVal) {
+    const cleaned = rawValue.trim().replace(',', '.');
+    if (cleaned === '') {
+      return { valid: false, error: `Ошибка: поле «${fieldName}» не может быть пустым.` };
+    }
+    if (!/^-?\d+(\.\d+)?$/.test(cleaned)) {
+      return { valid: false, error: `Ошибка: введите корректное число в поле «${fieldName}» (буквы и спецсимволы запрещены).` };
+    }
+    const num = parseFloat(cleaned);
+    if (num <= 0) {
+      return { valid: false, error: `Ошибка: значение «${fieldName}» должно быть строго больше нуля.` };
+    }
+    if (num < minVal) {
+      return { valid: false, error: `Ошибка: слишком малое значение (минимум ${minVal}).` };
+    }
+    if (num > maxVal) {
+      return { valid: false, error: `Ошибка: слишком большое значение для малого моста (максимум ${maxVal}).` };
+    }
+    return { valid: true, value: num };
+  }
+
+  /**
+   * Показ или скрытие сообщения об ошибке под конкретным полем
+   */
+  function setFieldError(inputId, errorId, message) {
+    const inputEl = document.getElementById(inputId);
+    const errEl = document.getElementById(errorId);
+    if (message) {
+      inputEl.classList.add('invalid');
+      errEl.textContent = message;
+      errEl.style.display = 'block';
+    } else {
+      inputEl.classList.remove('invalid');
+      errEl.textContent = '';
+      errEl.style.display = 'none';
+    }
+  }
+
+  /**
+   * Основная функция гидравлического расчёта отверстия малого моста (СП 35.13330.2011, п. 5.27)
+   */
+  function calculateBridge() {
+    // Сброс предыдущего состояния
+    ['flowRate', 'allowSpeed', 'factArea', 'waterDepth'].forEach(id => setFieldError(id, 'err-' + id, ''));
+    document.getElementById('sheetsStatus').textContent = '';
+
+    // 1. Валидация расхода воды Q (для малых мостов обычно до 500 м³/с)
+    const qCheck = validateNumber(document.getElementById('flowRate').value, 'Расход воды Q', 0.01, 1000);
+    if (!qCheck.valid) setFieldError('flowRate', 'err-flowRate', qCheck.error);
+
+    // 2. Валидация допускаемой скорости v_доп (обычно 0.4 - 6.0 м/с в зависимости от укрепления)
+    const vCheck = validateNumber(document.getElementById('allowSpeed').value, 'Допустимая скорость', 0.1, 10);
+    if (!vCheck.valid) setFieldError('allowSpeed', 'err-allowSpeed', vCheck.error);
+
+    // 3. Валидация глубины воды h (0.1 - 15 м)
+    const hCheck = validateNumber(document.getElementById('waterDepth').value, 'Глубина воды h', 0.1, 15);
+    if (!hCheck.valid) setFieldError('waterDepth', 'err-waterDepth', hCheck.error);
+
+    // 4. Валидация площади живого сечения и проверка ГРАНИЧНОЙ ЛОВУШКИ (см² вместо м²)
+    const areaUnit = document.getElementById('areaUnit').value;
+    const rawAreaStr = document.getElementById('factArea').value;
+    const areaCheck = validateNumber(rawAreaStr, 'Площадь живого сечения', 0.05, 5000000);
+    let factAreaM2 = 0;
+
+    if (!areaCheck.valid) {
+      setFieldError('factArea', 'err-factArea', areaCheck.error);
+    } else {
+      if (areaUnit === 'm2') {
+        // ГРАНИЧНАЯ ЛОВУШКА: Если выбраны м², но введено число > 300 (типичная ошибка ввода в см², например 150000)
+        if (areaCheck.value > 300) {
+          areaCheck.valid = false;
+          setFieldError(
+            'factArea',
+            'err-factArea',
+            `ГРАНИЧНАЯ ЛОВУШКА! Вы ввели ${areaCheck.value} м² — это слишком много для малого моста. Возможно, вы ввели площадь в см²? Переключите единицу измерения на «см²» или введите значение в м² (обычно 2–200 м²).`
+          );
+        } else {
+          factAreaM2 = areaCheck.value;
+        }
+      } else {
+        // Если пользователь явно выбрал см², переводим в м² (1 м² = 10 000 см²)
+        factAreaM2 = areaCheck.value / 10000;
+        if (factAreaM2 < 0.2 || factAreaM2 > 300) {
+          areaCheck.valid = false;
+          setFieldError(
+            'factArea',
+            'err-factArea',
+            `После перевода из см² площадь составила ${factAreaM2.toFixed(4)} м², что выходит за пределы норм для малого моста (0.2–300 м²).`
+          );
+        }
+      }
+    }
+
+    // Если есть хотя бы одна ошибка — прерываем расчёт
+    if (!qCheck.valid || !vCheck.valid || !hCheck.valid || !areaCheck.valid) {
+      document.getElementById('conclusionBox').style.display = 'none';
+      document.getElementById('saveBtn').disabled = true;
+      lastCalculation = null;
+      return;
+    }
+
+    // 5. Инженерные вычисления по формулам СП 35.13330.2011, п. 5.27
+    const Q = qCheck.value;
+    const vAllow = vCheck.value;
+    const h = hCheck.value;
+
+    const reqArea = Q / vAllow;                 // Требуемая площадь живого сечения, м²
+    const factSpeed = Q / factAreaM2;           // Фактическая скорость течения под мостом, м/с
+    const minWidth = reqArea / h;               // Требуемая минимальная ширина отверстия B0, м
+    const marginPercent = ((factAreaM2 - reqArea) / reqArea) * 100; // Запас сечения, %
+
+    // Вывод числовых результатов на экран
+    document.getElementById('res-reqArea').textContent = `${reqArea.toFixed(2)} м²`;
+    document.getElementById('res-factArea').textContent = `${factAreaM2.toFixed(2)} м²`;
+    document.getElementById('res-factSpeed').textContent = `${factSpeed.toFixed(2)} м/с`;
+    document.getElementById('res-minWidth').textContent = `${minWidth.toFixed(2)} м`;
+    document.getElementById('res-margin').textContent = `${marginPercent >= 0 ? '+' : ''}${marginPercent.toFixed(1)} %`;
+
+    // 6. Формирование инженерного заключения и цветовой индикации
+    const conclusionBox = document.getElementById('conclusionBox');
+    conclusionBox.style.display = 'block';
+    let conclusionText = '';
+    let warningText = 'Нет';
+
+    if (factAreaM2 >= reqArea && factSpeed <= vAllow) {
+      conclusionBox.className = 'conclusion-box conclusion-ok';
+      conclusionText = `УСЛОВИЕ ВЫПОЛНЕНО: Отверстие моста подобрано верно (ω_факт = ${factAreaM2.toFixed(2)} м² ≥ ω_тр = ${reqArea.toFixed(2)} м²). Фактическая скорость (${factSpeed.toFixed(2)} м/с) не превышает допустимую (${vAllow.toFixed(2)} м/с), размыв русла не ожидается.`;
+    } else {
+      conclusionBox.className = 'conclusion-box conclusion-fail';
+      conclusionText = `УСЛОВИЕ НЕ ВЫПОЛНЕНО: Требуется увеличить отверстие моста до B₀ ≥ ${minWidth.toFixed(2)} м (площадь ≥ ${reqArea.toFixed(2)} м²) либо предусмотреть усиленное укрепление подмостового русла, так как фактическая скорость (${factSpeed.toFixed(2)} м/с) превышает допустимую (${vAllow.toFixed(2)} м/с).`;
+      warningText = 'Превышение допустимой неразмывающей скорости потока';
+    }
+
+    conclusionBox.textContent = conclusionText;
+
+    // Сохраняем данные для экспорта в Google Sheets
+    lastCalculation = {
+      variant: 'Вариант 02 (Рамазан Аласов, гр. 1132)',
+      toolName: 'Подбор отверстия малого моста (СП 35.13330.2011, п. 5.27)',
+      inputs: {
+        Q_m3s: Q,
+        v_allow_ms: vAllow,
+        omega_fact_m2: Number(factAreaM2.toFixed(4)),
+        depth_h_m: h
+      },
+      results: {
+        omega_req_m2: Number(reqArea.toFixed(2)),
+        v_fact_ms: Number(factSpeed.toFixed(2)),
+        min_width_B0_m: Number(minWidth.toFixed(2)),
+        margin_percent: Number(marginPercent.toFixed(1))
+      },
+      conclusion: conclusionText,
+      warnings: warningText
+    };
+
+    document.getElementById('saveBtn').disabled = false;
+  }
+
+  /**
+   * Отправка результатов расчёта в Google Таблицу через Google Apps Script
+   */
+  async function saveToGoogleSheets() {
+    if (!lastCalculation) return;
+
+    const statusEl = document.getElementById('sheetsStatus');
+    const saveBtn = document.getElementById('saveBtn');
+
+    if (GOOGLE_SCRIPT_URL.includes('ВСТАВИТЬ_ВАШ_URL')) {
+      statusEl.style.color = '#dc2626';
+      statusEl.textContent = 'Ошибка: сначала вставьте URL вашего Google Apps Script в код файла index.html!';
+      return;
+    }
+
+    saveBtn.disabled = true;
+    statusEl.style.color = '#1e3a8a';
+    statusEl.textContent = 'Отправка данных в Google Таблицу...';
+
+    try {
+      await fetch(GOOGLE_SCRIPT_URL, {
+        method: 'POST',
+        mode: 'no-cors', // Требуется для обхода CORS при отправке в Google Apps Script
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(lastCalculation)
+      });
+
+      statusEl.style.color = '#16a34a';
+      statusEl.textContent = 'Данные успешно отправлены в Google Таблицу! Проверьте новую строку.';
+    } catch (err) {
+      statusEl.style.color = '#dc2626';
+      statusEl.textContent = 'Ошибка при отправке данных: ' + err.message;
+    } finally {
+      saveBtn.disabled = false;
+    }
+  }
+</script>
+
+</body>
+</html>
